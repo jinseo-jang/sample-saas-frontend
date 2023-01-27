@@ -7,9 +7,11 @@ import { useFormFields } from "../lib/hooksLib";
 import { onError } from "../lib/errorLib";
 import "./Signup.css";
 import { Auth } from "aws-amplify";
+import config from '../config';
 
 export default function Signup() {
   const [fields, handleFieldChange] = useFormFields({
+    company: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -19,9 +21,13 @@ export default function Signup() {
   const [newUser, setNewUser] = useState(null);
   const { userHasAuthenticated } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
+  const tenantIdentifier = config.cognito.USER_POOL_ID;
+
+  
 
   function validateForm() {
     return (
+      fields.company.length > 0 &&
       fields.email.length > 0 &&
       fields.password.length > 0 &&
       fields.password === fields.confirmPassword
@@ -36,9 +42,14 @@ export default function Signup() {
     event.preventDefault();
     setIsLoading(true);
     try {
+      console.log(tenantIdentifier.split('_')[1])
       const newUser = await Auth.signUp({
         username: fields.email,
         password: fields.password,
+        attributes: {
+          'custom:company_name': fields.company,
+          'custom:tenant_id': tenantIdentifier.split('_')[1]
+        }
       });
       setIsLoading(false);
       setNewUser(newUser);
@@ -92,6 +103,15 @@ export default function Signup() {
   function renderForm() {
     return (
       <Form onSubmit={handleSubmit}>
+        <Form.Group controlId="company" size="lg">
+          <Form.Label>Company</Form.Label>
+          <Form.Control
+            autoFocus
+            type="company"
+            value={fields.company}
+            onChange={handleFieldChange}
+          />
+        </Form.Group>
         <Form.Group controlId="email" size="lg">
           <Form.Label>Email</Form.Label>
           <Form.Control
