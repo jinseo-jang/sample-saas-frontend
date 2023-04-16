@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
 import LoaderButton from "../components/LoaderButton";
@@ -62,12 +63,45 @@ export default function Signup() {
     }
   }
   
+  async function createUserInDatabase(user) {
+    const apiUrl = "https://localhost:5000/api/users"
+
+    const data = {
+      company: user.company,
+      role: user.role,
+      email: user.email
+    };
+
+    console.log("Passed data:", data)
+
+    try {
+      // temporal logic to test
+      const response="good"
+      // The below is intended code for the future when /users api is created
+      //const response = await axios.post(apiUrl, data);
+      console.log("User data created successfully:", response);
+    }catch (error) {
+      console.log("Error creating user data:", error);
+    }
+
+  }
+
   async function handleConfirmationSubmit(event) {
     event.preventDefault();
     setIsLoading(true);
     try {
       await Auth.confirmSignUp(fields.email, fields.confirmationCode);
       await Auth.signIn(fields.email, fields.password);
+
+      //create a new user data in database
+      const user = {
+        company: fields.company,
+        role: fields.role,
+        email: fields.email,
+      };
+
+      await createUserInDatabase(user);
+
       userHasAuthenticated(true);
       nav("/");
     } catch (e) {
@@ -125,7 +159,7 @@ export default function Signup() {
           <option value="">Select a role</option>
           <option value="admin">Admin</option>
           <option value="manager">Manager</option>
-          <option value="user">Staff</option>
+          <option value="staff">Staff</option>
         </Form.Select>
       </Form.Group>
         <Form.Group controlId="email" size="lg">
