@@ -12,6 +12,7 @@ import config from '../config';
 export default function Signup() {
   const [fields, handleFieldChange] = useFormFields({
     company: "",
+    role: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -28,6 +29,7 @@ export default function Signup() {
   function validateForm() {
     return (
       fields.company.length > 0 &&
+      fields.role.length > 0 &&
       fields.email.length > 0 &&
       fields.password.length > 0 &&
       fields.password === fields.confirmPassword
@@ -48,7 +50,8 @@ export default function Signup() {
         password: fields.password,
         attributes: {
           'custom:company_name': fields.company,
-          'custom:tenant_id': tenantIdentifier.split('_')[1]
+          'custom:tenant_id': 'TENANT'+tenantIdentifier.split('_')[1],
+          'custom:user_role': fields.role
         }
       });
       setIsLoading(false);
@@ -112,6 +115,19 @@ export default function Signup() {
             onChange={handleFieldChange}
           />
         </Form.Group>
+        <Form.Group controlId="role" size="lg">
+        <Form.Label>Role</Form.Label>
+        <Form.Select
+          autoFocus
+          value={fields.role}
+          onChange={handleFieldChange}
+        >
+          <option value="">Select a role</option>
+          <option value="admin">Admin</option>
+          <option value="manager">Manager</option>
+          <option value="user">Staff</option>
+        </Form.Select>
+      </Form.Group>
         <Form.Group controlId="email" size="lg">
           <Form.Label>Email</Form.Label>
           <Form.Control
