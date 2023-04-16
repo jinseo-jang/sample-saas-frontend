@@ -23,7 +23,8 @@ export default function Signup() {
   const [newUser, setNewUser] = useState(null);
   const { userHasAuthenticated } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
-  const tenantIdentifier = config.cognito.USER_POOL_ID;
+  // const tenantIdentifier = config.cognito.USER_POOL_ID;
+  const tenantIdentifier = 'TENANT'+config.cognito.USER_POOL_ID.split('_')[1];
 
   
 
@@ -45,13 +46,13 @@ export default function Signup() {
     event.preventDefault();
     setIsLoading(true);
     try {
-      console.log(tenantIdentifier.split('_')[1])
+      console.log("Submitting tenant id",tenantIdentifier)
       const newUser = await Auth.signUp({
         username: fields.email,
         password: fields.password,
         attributes: {
           'custom:company_name': fields.company,
-          'custom:tenant_id': 'TENANT'+tenantIdentifier.split('_')[1],
+          'custom:tenant_id': tenantIdentifier,
           'custom:user_role': fields.role
         }
       });
@@ -63,13 +64,14 @@ export default function Signup() {
     }
   }
   
-  async function createUserInDatabase(user) {
+  async function createUserInDatabase(user, idToken) {
     const apiUrl = "https://localhost:5000/api/users"
 
     const data = {
       company: user.company,
       role: user.role,
-      email: user.email
+      user_name: user.user_name,
+      tenant_id: user.tenant_id,
     };
 
     console.log("Passed data:", data)
@@ -78,7 +80,11 @@ export default function Signup() {
       // temporal logic to test
       const response="good"
       // The below is intended code for the future when /users api is created
-      //const response = await axios.post(apiUrl, data);
+      // const response = await axios.post(apiUrl, data, {
+      //   headers: {
+      //     Authorization: `Bearer ${idToken}`,
+      //   }
+      // });
       console.log("User data created successfully:", response);
     }catch (error) {
       console.log("Error creating user data:", error);
@@ -93,14 +99,19 @@ export default function Signup() {
       await Auth.confirmSignUp(fields.email, fields.confirmationCode);
       await Auth.signIn(fields.email, fields.password);
 
+      const session = await Auth.currentSession();
+      const idToken = session.getIdToken().getJwtToken();
+      console.log("ID Token:", idToken);
+
       //create a new user data in database
       const user = {
         company: fields.company,
         role: fields.role,
-        email: fields.email,
+        user_name: fields.email,
+        tenant_id: tenantIdentifier,
       };
 
-      await createUserInDatabase(user);
+      await createUserInDatabase(user, idToken);
 
       userHasAuthenticated(true);
       nav("/");
