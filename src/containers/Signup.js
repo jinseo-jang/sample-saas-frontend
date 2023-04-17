@@ -13,6 +13,7 @@ import config from '../config';
 export default function Signup() {
   const [fields, handleFieldChange] = useFormFields({
     company: "",
+    tier: "",
     role: "",
     email: "",
     password: "",
@@ -31,6 +32,7 @@ export default function Signup() {
   function validateForm() {
     return (
       fields.company.length > 0 &&
+      fields.tier.length > 0 &&
       fields.role.length > 0 &&
       fields.email.length > 0 &&
       fields.password.length > 0 &&
@@ -51,9 +53,10 @@ export default function Signup() {
         username: fields.email,
         password: fields.password,
         attributes: {
-          'custom:company_name': fields.company,
           'custom:tenant_id': tenantIdentifier,
-          'custom:user_role': fields.role
+          'custom:tenant_name': fields.company,
+          'custom:tenant_tier': fields.tier,
+          'custom:user_role': fields.role,
         }
       });
       setIsLoading(false);
@@ -68,7 +71,8 @@ export default function Signup() {
     const apiUrl = "https://localhost:5000/api/users"
 
     const data = {
-      company: user.company,
+      tenant_name: user.tenant_name,
+      tier: user.tier,
       role: user.role,
       user_name: user.user_name,
       tenant_id: user.tenant_id,
@@ -105,7 +109,8 @@ export default function Signup() {
 
       //create a new user data in database
       const user = {
-        company: fields.company,
+        tenant_name: fields.company,
+        tier: fields.tier,
         role: fields.role,
         user_name: fields.email,
         tenant_id: tenantIdentifier,
@@ -160,6 +165,19 @@ export default function Signup() {
             onChange={handleFieldChange}
           />
         </Form.Group>
+        <Form.Group controlId="tier" size="lg">
+        <Form.Label>Tier</Form.Label>
+        <Form.Select
+          autoFocus
+          value={fields.tier}
+          onChange={handleFieldChange}
+        >
+          <option value="">Select a tier</option>
+          <option value="basic">Basic</option>
+          <option value="standard">Standard</option>
+          <option value="premium">Premium</option>
+        </Form.Select>
+        </Form.Group>        
         <Form.Group controlId="role" size="lg">
         <Form.Label>Role</Form.Label>
         <Form.Select
@@ -172,42 +190,42 @@ export default function Signup() {
           <option value="manager">Manager</option>
           <option value="staff">Staff</option>
         </Form.Select>
-      </Form.Group>
-        <Form.Group controlId="email" size="lg">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            autoFocus
-            type="email"
-            value={fields.email}
-            onChange={handleFieldChange}
-          />
         </Form.Group>
-        <Form.Group controlId="password" size="lg">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password"
-            value={fields.password}
-            onChange={handleFieldChange}
-          />
-        </Form.Group>
-        <Form.Group controlId="confirmPassword" size="lg">
-          <Form.Label>Confirm Password</Form.Label>
-          <Form.Control
-            type="password"
-            onChange={handleFieldChange}
-            value={fields.confirmPassword}
-          />
-        </Form.Group>
-        <LoaderButton
-          block="true"
-          size="lg"
-          type="submit"
-          variant="success"
-          isLoading={isLoading}
-          disabled={!validateForm()}
-        >
-          Signup
-        </LoaderButton>
+          <Form.Group controlId="email" size="lg">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              autoFocus
+              type="email"
+              value={fields.email}
+              onChange={handleFieldChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="password" size="lg">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              value={fields.password}
+              onChange={handleFieldChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="confirmPassword" size="lg">
+            <Form.Label>Confirm Password</Form.Label>
+            <Form.Control
+              type="password"
+              onChange={handleFieldChange}
+              value={fields.confirmPassword}
+            />
+          </Form.Group>
+          <LoaderButton
+            block="true"
+            size="lg"
+            type="submit"
+            variant="success"
+            isLoading={isLoading}
+            disabled={!validateForm()}
+          >
+            Signup
+          </LoaderButton>
       </Form>
     );
   }
