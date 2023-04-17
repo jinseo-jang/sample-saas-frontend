@@ -1,2 +1,16 @@
 .App {
 }
+/* In AppNavbar.css */
+.navbar-text-container {
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+  }
+  
+  .tenant-info {
+    margin-left: 1rem;
+  }  
+.ocean-blue {
+    background-color: #1c7fa8;
+}
+  

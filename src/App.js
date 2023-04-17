@@ -11,37 +11,45 @@ import { Auth } from "aws-amplify";
 import { useNavigate } from "react-router-dom";
 import { onError } from "./lib/errorLib";
 
-
 function App() {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isAuthenticated, userHasAuthenticated] = useState(false);
   const nav = useNavigate();
+  const [tenantId, setTenantId] = useState(null);
+  const [userName, setUserName] = useState(null);
 
   useEffect(() => {
     onLoad();
   }, []);
-  
+
   async function onLoad() {
     try {
-      await Auth.currentSession();
+      //await Auth.currentSession();
+      const session = await Auth.currentSession();
+      const userAttributes = session.getIdToken().payload;
+      const loggedInTenantId = userAttributes["custom:tenant_id"];
+      const loggedInUserName = userAttributes["email"];
+
+      setTenantId(loggedInTenantId);
+      setUserName(loggedInUserName);
+
       userHasAuthenticated(true);
     } catch (e) {
       if (e !== "No current user") {
         onError(e);
       }
     }
-  
+
     setIsAuthenticating(false);
-  }  
-  
+  }
+
   async function handleLogout() {
     await Auth.signOut();
-  
+
     userHasAuthenticated(false);
 
     nav("/login");
   }
-
   return (
     !isAuthenticating && (
       <div className="App container py-3">
@@ -53,8 +61,9 @@ function App() {
                 src="/logo.png"
                 width="30"
                 height="30"
-                className="d-inline-block align-top"
-              />ClockIO         
+                className="d-inline-block align-top mr-2"
+              />
+              ClockIO
             </Navbar.Brand>
           </LinkContainer>
           <Navbar.Toggle />
@@ -67,9 +76,14 @@ function App() {
                   </LinkContainer>
                   <LinkContainer to="/records">
                     <Nav.Link>Records</Nav.Link>
-                  </LinkContainer>                
+                  </LinkContainer>
                   <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
-                </>                
+                  <Nav.Item className="navbar-text-container">
+                    <Navbar.Text className="text-primary">
+                      Tenant ID: {tenantId} | Tenant Name: {userName}
+                    </Navbar.Text>
+                  </Nav.Item>
+                </>
               ) : (
                 <>
                   <LinkContainer to="/signup">
@@ -91,39 +105,56 @@ function App() {
   );
 }
 
-// function App() {
-//   return (
+// return (
+//   !isAuthenticating && (
 //     <div className="App container py-3">
 //       <Navbar collapseOnSelect bg="light" expand="md" className="mb-3">
-//         <Navbar.Brand href="/" className="font-weight-bold text-muted">
-//         <img
+//         <LinkContainer to="/">
+//           <Navbar.Brand className="font-weight-bold text-muted">
+//             <img
 //               alt=""
 //               src="/logo.png"
 //               width="30"
 //               height="30"
 //               className="d-inline-block align-top"
-//             />{' '}
-//           ClockIO
-//         </Navbar.Brand>
+//             />ClockIO
+//           </Navbar.Brand>
+//         </LinkContainer>
 //         <Navbar.Toggle />
-//         <Navbar.Collapse id="basic-navbar-nav">
-//     </Navbar.Collapse>
 //         <Navbar.Collapse className="justify-content-end">
-//           <Nav>
-//             <Nav.Link href="/">Home</Nav.Link>
-//             <Nav.Link href="/checkin">Check-in</Nav.Link>
-//             <Nav.Link href="/records">Records</Nav.Link>
-//             <Nav.Link href="/signup">Signup</Nav.Link>
-//             <Nav.Link href="/login">Login</Nav.Link>
+//           <Nav activeKey={window.location.pathname}>
+//             {isAuthenticated ? (
+//               <>
+//                 <LinkContainer to="/checkin">
+//                   <Nav.Link>ClockIn</Nav.Link>
+//                 </LinkContainer>
+//                 <LinkContainer to="/records">
+//                   <Nav.Link>Records</Nav.Link>
+//                 </LinkContainer>
+//                 <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
+//                 <Navbar.Text>
+//                   Tenant ID: {tenantId} | Tenant Name: {userName}
+//                 </Navbar.Text>
+//               </>
+//             ) : (
+//               <>
+//                 <LinkContainer to="/signup">
+//                   <Nav.Link>Signup</Nav.Link>
+//                 </LinkContainer>
+//                 <LinkContainer to="/login">
+//                   <Nav.Link>Login</Nav.Link>
+//                 </LinkContainer>
+//               </>
+//             )}
 //           </Nav>
-//           </Navbar.Collapse>
-
+//         </Navbar.Collapse>
 //       </Navbar>
-//       <Routes>
-//         <Route path="/" element={<Home />} />
-//       </Routes>
+//       <AppContext.Provider value={{ isAuthenticated, userHasAuthenticated }}>
+//         <Routes />
+//       </AppContext.Provider>
 //     </div>
-//   );
+//   )
+// );
 // }
 
 export default App;

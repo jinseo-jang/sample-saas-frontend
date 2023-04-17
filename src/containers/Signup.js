@@ -68,7 +68,7 @@ export default function Signup() {
   }
   
   async function createUserInDatabase(user, idToken) {
-    const apiUrl = "https://localhost:5000/api/users"
+    const apiUrl = "http://127.0.0.1:5000/api/users"
 
     const data = {
       tenant_name: user.tenant_name,
@@ -77,18 +77,18 @@ export default function Signup() {
       user_name: user.user_name,
       tenant_id: user.tenant_id,
     };
-
+    // {tenant_name: 'aws', tier: 'premium', role: 'staff', user_name: 'jinseo.jang+staff@gmail.com', tenant_id: 'TENANTGZQxat8dr'}
     console.log("Passed data:", data)
 
     try {
       // temporal logic to test
-      const response="good"
+      //const response="good"
       // The below is intended code for the future when /users api is created
-      // const response = await axios.post(apiUrl, data, {
-      //   headers: {
-      //     Authorization: `Bearer ${idToken}`,
-      //   }
-      // });
+      const response = await axios.post(apiUrl, data, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        }
+      });
       console.log("User data created successfully:", response);
     }catch (error) {
       console.log("Error creating user data:", error);
