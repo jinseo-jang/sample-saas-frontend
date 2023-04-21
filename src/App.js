@@ -22,9 +22,38 @@ function App() {
     onLoad();
   }, []);
 
-  async function onLoad() {
+  // async function onLoad() {
+  //   try {
+  //     //await Auth.currentSession();
+  //     const session = await Auth.currentSession();
+  //     const userAttributes = session.getIdToken().payload;
+  //     const loggedInTenantId = userAttributes["custom:tenant_id"];
+  //     const loggedInUserName = userAttributes["email"];
+
+  //     // console.log('Tenant ID:', loggedInTenantId, 'User Name:', loggedInUserName);
+
+
+  //     setTenantId(loggedInTenantId);
+  //     setUserName(loggedInUserName);
+
+  //     userHasAuthenticated(true);
+  //   } catch (e) {
+  //     if (e !== "No current user") {
+  //       onError(e);
+  //     }
+  //   }
+
+  //   setIsAuthenticating(false);
+  // }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchTenantInformation();
+    }
+  }, [isAuthenticated]);
+
+  async function fetchTenantInformation() {
     try {
-      //await Auth.currentSession();
       const session = await Auth.currentSession();
       const userAttributes = session.getIdToken().payload;
       const loggedInTenantId = userAttributes["custom:tenant_id"];
@@ -32,7 +61,16 @@ function App() {
 
       setTenantId(loggedInTenantId);
       setUserName(loggedInUserName);
+    } catch (e) {
+      if (e !== "No current user") {
+        onError(e);
+      }
+    }
+  }
 
+  async function onLoad() {
+    try {
+      await Auth.currentSession();
       userHasAuthenticated(true);
     } catch (e) {
       if (e !== "No current user") {
@@ -47,6 +85,9 @@ function App() {
     await Auth.signOut();
 
     userHasAuthenticated(false);
+    setTenantId(null);
+    setUserName(null);
+  
 
     nav("/login");
   }
