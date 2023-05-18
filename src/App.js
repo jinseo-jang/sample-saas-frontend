@@ -10,6 +10,7 @@ import { AppContext } from "./lib/contextLib";
 import { Auth } from "aws-amplify";
 import { useNavigate } from "react-router-dom";
 import { onError } from "./lib/errorLib";
+import { fetchUserInformation } from "./authUtils";
 
 function App() {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
@@ -22,56 +23,26 @@ function App() {
     onLoad();
   }, []);
 
-  // async function onLoad() {
-  //   try {
-  //     //await Auth.currentSession();
-  //     const session = await Auth.currentSession();
-  //     const userAttributes = session.getIdToken().payload;
-  //     const loggedInTenantId = userAttributes["custom:tenant_id"];
-  //     const loggedInUserName = userAttributes["email"];
-
-  //     // console.log('Tenant ID:', loggedInTenantId, 'User Name:', loggedInUserName);
-
-
-  //     setTenantId(loggedInTenantId);
-  //     setUserName(loggedInUserName);
-
-  //     userHasAuthenticated(true);
-  //   } catch (e) {
-  //     if (e !== "No current user") {
-  //       onError(e);
-  //     }
-  //   }
-
-  //   setIsAuthenticating(false);
-  // }
-
   useEffect(() => {
     if (isAuthenticated) {
-      fetchTenantInformation();
+      fetchUserInformation()
+        .then((userInfo) => {
+          if (userInfo) {
+            const { loggedInTenantId, loggedInUserName } = userInfo;
+            setTenantId(loggedInTenantId);
+            setUserName(loggedInUserName);
+          }
+        })
+        .catch((error) => {
+          onError(error);
+        });
     }
   }, [isAuthenticated]);
-
-  async function fetchTenantInformation() {
-    try {
-      const session = await Auth.currentSession();
-      const userAttributes = session.getIdToken().payload;
-      const loggedInTenantId = userAttributes["custom:tenant_id"];
-      const loggedInUserName = userAttributes["email"];
-
-      setTenantId(loggedInTenantId);
-      setUserName(loggedInUserName);
-    } catch (e) {
-      if (e !== "No current user") {
-        onError(e);
-      }
-    }
-  }
-
+  
   async function onLoad() {
     try {
       await Auth.currentSession();
-      userHasAuthenticated(true);
+      userHasAuthenticated(true);     
     } catch (e) {
       if (e !== "No current user") {
         onError(e);
@@ -87,7 +58,7 @@ function App() {
     userHasAuthenticated(false);
     setTenantId(null);
     setUserName(null);
-  
+
 
     nav("/login");
   }
@@ -139,63 +110,15 @@ function App() {
           </Navbar.Collapse>
         </Navbar>
         <AppContext.Provider value={{ isAuthenticated, userHasAuthenticated }}>
-          <Routes />
+          <Routes 
+            tenantId={tenantId}
+            userName={userName}
+            handleLogout={handleLogout}
+          />
         </AppContext.Provider>
       </div>
     )
   );
 }
-
-// return (
-//   !isAuthenticating && (
-//     <div className="App container py-3">
-//       <Navbar collapseOnSelect bg="light" expand="md" className="mb-3">
-//         <LinkContainer to="/">
-//           <Navbar.Brand className="font-weight-bold text-muted">
-//             <img
-//               alt=""
-//               src="/logo.png"
-//               width="30"
-//               height="30"
-//               className="d-inline-block align-top"
-//             />ClockIO
-//           </Navbar.Brand>
-//         </LinkContainer>
-//         <Navbar.Toggle />
-//         <Navbar.Collapse className="justify-content-end">
-//           <Nav activeKey={window.location.pathname}>
-//             {isAuthenticated ? (
-//               <>
-//                 <LinkContainer to="/checkin">
-//                   <Nav.Link>ClockIn</Nav.Link>
-//                 </LinkContainer>
-//                 <LinkContainer to="/records">
-//                   <Nav.Link>Records</Nav.Link>
-//                 </LinkContainer>
-//                 <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
-//                 <Navbar.Text>
-//                   Tenant ID: {tenantId} | Tenant Name: {userName}
-//                 </Navbar.Text>
-//               </>
-//             ) : (
-//               <>
-//                 <LinkContainer to="/signup">
-//                   <Nav.Link>Signup</Nav.Link>
-//                 </LinkContainer>
-//                 <LinkContainer to="/login">
-//                   <Nav.Link>Login</Nav.Link>
-//                 </LinkContainer>
-//               </>
-//             )}
-//           </Nav>
-//         </Navbar.Collapse>
-//       </Navbar>
-//       <AppContext.Provider value={{ isAuthenticated, userHasAuthenticated }}>
-//         <Routes />
-//       </AppContext.Provider>
-//     </div>
-//   )
-// );
-// }
 
 export default App;

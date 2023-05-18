@@ -68,7 +68,7 @@ export default function Signup() {
   }
   
   async function createUserInDatabase(user, idToken) {
-    const apiUrl = "http://127.0.0.1:5000/api/users"
+    const apiUrl = "http://127.0.0.1:5001/api/users"
 
     const data = {
       tenant_name: user.tenant_name,
@@ -92,6 +92,7 @@ export default function Signup() {
       console.log("User data created successfully:", response);
     }catch (error) {
       console.log("Error creating user data:", error);
+      throw new Error("Error creating user data. Please try sign up again");
     }
 
   }
@@ -116,7 +117,22 @@ export default function Signup() {
         tenant_id: tenantIdentifier,
       };
 
-      await createUserInDatabase(user, idToken);
+      
+      try {
+        await createUserInDatabase(user, idToken);
+      } catch (e) {
+        onError(e)
+        setIsLoading(false);
+
+        try {
+          await Auth.deleteUser(fields.email);
+          console.log("User deleted successfully");
+        } catch (deleteError) {
+          console.error("Error deleting user:", deleteError);
+        }
+
+        return;
+      }
 
       userHasAuthenticated(true);
       nav("/");
