@@ -74,7 +74,7 @@ export default function Records() {
       <div className="lists mt-0 mb-0">
         {loading ? (
           <Spinner animation="border" variant="primary" />
-        ) : (
+        ) : content.length > 0 ? (
           content.map((record) => (
             <ListGroup
               as="ol"
@@ -117,6 +117,8 @@ export default function Records() {
               </ListGroup.Item>
             </ListGroup>
           ))
+        ) : (
+          <p className="text-center fs-1">No records found</p>
         )}
       </div>
     </div>
