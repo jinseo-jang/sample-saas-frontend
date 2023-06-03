@@ -18,6 +18,7 @@ function App() {
   const nav = useNavigate();
   const [tenantId, setTenantId] = useState(null);
   const [userName, setUserName] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     onLoad();
@@ -28,9 +29,10 @@ function App() {
       fetchUserInformation()
         .then((userInfo) => {
           if (userInfo) {
-            const { loggedInTenantId, loggedInUserName } = userInfo;
+            const { loggedInTenantId, loggedInUserName, loggedInUserRole } = userInfo;
             setTenantId(loggedInTenantId);
             setUserName(loggedInUserName);
+            setUserRole(loggedInUserRole);
           }
         })
         .catch((error) => {
@@ -58,6 +60,7 @@ function App() {
     userHasAuthenticated(false);
     setTenantId(null);
     setUserName(null);
+    setUserRole(null);
 
 
     nav("/login");
@@ -91,8 +94,10 @@ function App() {
                   </LinkContainer>
                   <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
                   <Nav.Item className="navbar-text-container">
-                    <Navbar.Text className="text-primary">
-                      Tenant ID: {tenantId} | Tenant Name: {userName}
+                    <Navbar.Text>
+                      <span className="fw-bold">Tenant ID:</span> <span className="me-3">{tenantId}</span>
+                      <span className="fw-bold">User Name:</span> <span className="me-3">{userName}</span>
+                      <span className="fw-bold">User Role:</span> {userRole}
                     </Navbar.Text>
                   </Nav.Item>
                 </>

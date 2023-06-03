@@ -21,14 +21,16 @@ export default function Records() {
   const [loading, setLoading] = useState(true);
   const [tenantId, setTenantId] = useState(null);
   const [userName, setUserName] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     async function fetchUserInfo() {
       const userInfo = await fetchUserInformation();
       if (userInfo) {
-        const { loggedInTenantId, loggedInUserName } = userInfo;
+        const { loggedInTenantId, loggedInUserName, loggedInUserRole } = userInfo;
         setTenantId(loggedInTenantId);
         setUserName(loggedInUserName);
+        setUserRole(loggedInUserRole);
       }
     }
     fetchUserInfo();
@@ -70,6 +72,9 @@ export default function Records() {
         <div className="text-start">
           <span className="fw-bold">User Name:</span> {userName}
         </div>
+        <div className="text-start">
+          <span className="fw-bold">User Role:</span> {userRole}
+        </div>      
       </div>
       <div className="lists mt-0 mb-0">
         {loading ? (
@@ -93,7 +98,7 @@ export default function Records() {
                   <div>
                     <span className="fw-bold">User Name:</span>{" "}
                     {record.user_name}
-                  </div>
+                  </div>                  
                   <div>
                     <span className="fw-bold text-primary">Clock In:</span>{" "}
                     {record.clock_in || "Not yet"}
